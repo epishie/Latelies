@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="gap_0">4dp</dimen>
+    <dimen name="gap_1">8dp</dimen>
+    <dimen name="gap_2">16dp</dimen>
+
+    <dimen name="key_line_1">16dp</dimen>
+    <dimen name="key_line_2">72dp</dimen>
+
+    <dimen name="icon_size">24dp</dimen>
+</resources>

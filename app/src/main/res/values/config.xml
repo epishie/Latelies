@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="default_sources">
+        <item>bbc-news</item>
+        <item>bloomberg</item>
+        <item>business-insider</item>
+        <item>cnn</item>
+        <item>espn</item>
+        <item>fox-sports</item>
+        <item>ign</item>
+        <item>national-geographic</item>
+        <item>polygon</item>
+        <item>reuters</item>
+        <item>techradar</item>
+        <item>the-verge</item>
+    </string-array>
+</resources>

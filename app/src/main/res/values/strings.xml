@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">News</string>
+
+    <string name="title_sources">Pick your news source</string>
+    <string name="error_sources">Can\'t load news sources</string>
+    <string name="retry">Retry</string>
+</resources>
