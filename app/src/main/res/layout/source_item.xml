@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/key_line_1"
+    android:paddingEnd="@dimen/key_line_1"
+    android:paddingTop="@dimen/gap_1"
+    android:paddingBottom="@dimen/gap_1">
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="@dimen/source_logo_size"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/title"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1" />
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/logo"
+        app:layout_constraintEnd_toStartOf="@+id/check"
+        app:layout_constraintTop_toTopOf="@id/logo"
+        app:layout_constraintBottom_toBottomOf="@id/logo"
+        android:layout_marginStart="@dimen/gap_2"
+        android:layout_marginEnd="@dimen/gap_2"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:maxLines="2"
+        tools:text="The Guardian" />
+    <CheckBox
+        android:id="@+id/check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/logo"
+        app:layout_constraintBottom_toBottomOf="@id/logo" />
+</android.support.constraint.ConstraintLayout>

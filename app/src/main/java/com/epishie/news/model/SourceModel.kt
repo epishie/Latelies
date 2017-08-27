@@ -6,11 +6,12 @@ import com.epishie.news.model.network.NewsApi
 import io.reactivex.Flowable
 import io.reactivex.Scheduler
 import javax.inject.Inject
+import javax.inject.Named
 
 class SourceModel
 @Inject constructor(newsDb: NewsDb,
                     private val newsApi: NewsApi,
-                    private val worker: Scheduler) {
+                    @Named("worker") private val worker: Scheduler) {
     private val sourceDao = newsDb.sourceDao()
     private val dbUpdates: Flowable<Result>
         get() {

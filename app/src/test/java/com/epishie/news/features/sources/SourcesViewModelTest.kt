@@ -2,6 +2,7 @@
 
 package com.epishie.news.features.sources
 
+import com.epishie.news.features.common.toLogoUrl
 import com.epishie.news.model.NetworkSyncError
 import com.epishie.news.model.SourceModel
 import com.epishie.news.model.db.Db
@@ -54,7 +55,7 @@ class SourcesViewModelTest {
 
         // THEN
         val source = SourcesViewModel.Source("source1", "Source 1",
-                "http://source1.com", false)
+                "http://source1.com".toLogoUrl(), false)
         assertThat(subscriber.values())
                 .containsExactly(SourcesViewModel.State(false, "", emptyList()),
                         SourcesViewModel.State(false, "", listOf(source)))
@@ -75,7 +76,7 @@ class SourcesViewModelTest {
         assertThat(subscriber.values())
                 .containsExactly(SourcesViewModel.State(false, "", emptyList()),
                         SourcesViewModel.State(true, "", emptyList()),
-                        SourcesViewModel.State(true, "", emptyList()))
+                        SourcesViewModel.State(false, "", emptyList()))
     }
 
     @Test

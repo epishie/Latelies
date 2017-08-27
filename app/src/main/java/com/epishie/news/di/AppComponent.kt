@@ -1,6 +1,7 @@
 package com.epishie.news.di
 
 import com.epishie.news.App
+import com.epishie.news.features.SourcesFragment
 import com.epishie.news.features.common.ViewModelFactory
 import dagger.BindsInstance
 import dagger.Component
@@ -17,4 +18,6 @@ interface AppComponent {
     }
 
     fun vmFactory(): ViewModelFactory
+
+    fun inject(fragment: SourcesFragment)
 }

@@ -8,4 +8,8 @@
     <dimen name="key_line_2">72dp</dimen>
 
     <dimen name="icon_size">24dp</dimen>
+
+    <dimen name="row_size_1">48dp</dimen>
+
+    <dimen name="source_logo_size">56dp</dimen>
 </resources>

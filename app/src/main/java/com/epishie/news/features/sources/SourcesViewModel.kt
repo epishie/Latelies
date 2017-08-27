@@ -1,6 +1,7 @@
 package com.epishie.news.features.sources
 
 import android.arch.lifecycle.ViewModel
+import com.epishie.news.features.common.toLogoUrl
 import com.epishie.news.model.SourceModel
 import com.epishie.news.model.SourceModel.Action
 import com.epishie.news.model.db.Db
@@ -27,16 +28,15 @@ class SourcesViewModel
         return when (result) {
             is SourceModel.Result.Update ->
                 state.copy(sources = result.sources.map(this::mapDbToVm), error = "")
-            is SourceModel.Result.Syncing ->
-                state.copy(progress = true, error = "")
-            is SourceModel.Result.Error -> state.copy(progress = false,
-                    error = result.throwable.message ?: "Error")
-            else -> state
+            is SourceModel.Result.Syncing -> state.copy(progress = true, error = "")
+            is SourceModel.Result.Synced -> state.copy(progress = false, error = "")
+            is SourceModel.Result.Error ->
+                state.copy(progress = false, error = result.throwable.message ?: "Error")
         }
     }
 
     private fun mapDbToVm(source: Db.Source): Source {
-        return Source(source.id, source.name, source.url, source.selected)
+        return Source(source.id, source.name, source.url.toLogoUrl(), source.selected)
     }
 
     data class State(val progress: Boolean, val error: String, val sources: List<Source>)
