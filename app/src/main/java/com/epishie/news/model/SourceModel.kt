@@ -6,6 +6,8 @@ import com.epishie.news.model.network.NewsApi
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Scheduler
+import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -13,7 +15,12 @@ class SourceModel
 @Inject constructor(newsDb: NewsDb,
                     private val newsApi: NewsApi,
                     @Named("worker") private val worker: Scheduler) {
+    private companion object {
+        val SYNC_RESOURCE = "source"
+        val SYNC_TIME = TimeUnit.DAYS.toMillis(1)
+    }
     private val sourceDao = newsDb.sourceDao()
+    private val syncDao = newsDb.syncDao()
     private val dbUpdates: Flowable<Result>
         get() {
             return sourceDao.loadAllSources()
@@ -35,27 +42,39 @@ class SourceModel
     }
 
     private fun refreshAction(actions: Flowable<Action.Refresh>): Flowable<Result> {
-        return actions.flatMap {
-            val sync = newsApi.getSources()
-                    .subscribeOn(worker)
-                    .publish()
-                    .autoConnect(2)
-
-            // DB sync
-            sync.onErrorResumeNext { _: Throwable ->
-                Flowable.empty()
-            }.subscribe(this::saveToDb)
-
-            return@flatMap sync.map { (_, sources) ->
-                if (sources != null) {
-                    Result.Synced
-                } else {
-                    Result.Error(NetworkSyncError())
+        return actions
+                .flatMap {
+                    Flowable.fromPublisher<Db.Sync> { subscriber ->
+                        syncDao.loadSync(SYNC_RESOURCE)
+                                .toFlowable()
+                                .subscribe(subscriber)
+                    }.subscribeOn(worker)
                 }
-            }.onErrorResumeNext { error: Throwable ->
-                Flowable.just(Result.Error(error))
-            }.startWith(Result.Syncing)
-        }
+                .filter { sync ->
+                    val difference = Date().time - sync.timestamp
+                    return@filter difference >= SYNC_TIME
+                }
+                .flatMap {
+                    val sync = newsApi.getSources()
+                            .subscribeOn(worker)
+                            .publish()
+                            .autoConnect(2)
+
+                    // DB sync
+                    sync.onErrorResumeNext { _: Throwable ->
+                        Flowable.empty()
+                    }.subscribe(this::saveToDb)
+
+                    return@flatMap sync.map { (_, sources) ->
+                        if (sources != null) {
+                            Result.Synced
+                        } else {
+                            Result.Error(NetworkSyncError())
+                        }
+                    }.onErrorResumeNext { error: Throwable ->
+                        Flowable.just(Result.Error(error))
+                    }.startWith(Result.Syncing)
+                }
     }
 
     private fun selectAction(actions: Flowable<Action.Select>): Flowable<Result> {
@@ -74,6 +93,7 @@ class SourceModel
             sourceDao.saveSourceSelections(result.sources.map { (id) ->
                 Db.SourceSelection(id, false)
             })
+            syncDao.saveSync(Db.Sync(SYNC_RESOURCE, Date().time))
         }
     }
 

@@ -7,10 +7,12 @@ import com.epishie.news.model.SourceModel.Result
 import com.epishie.news.model.db.Db
 import com.epishie.news.model.db.NewsDb
 import com.epishie.news.model.db.SourceDao
+import com.epishie.news.model.db.SyncDao
 import com.epishie.news.model.network.NewsApi
 import com.nhaarman.mockito_kotlin.*
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
+import io.reactivex.Single
 import io.reactivex.schedulers.TestScheduler
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subscribers.TestSubscriber
@@ -18,10 +20,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class SourceModelTest {
     lateinit var sourceDao: SourceDao
+    lateinit var syncDao: SyncDao
     lateinit var newsApi: NewsApi
     lateinit var worker: TestScheduler
     lateinit var sources: PublishSubject<List<Db.Source>>
@@ -33,10 +37,16 @@ class SourceModelTest {
         sourceDao = mock {
             on { loadAllSources() } doReturn sources.toFlowable(BackpressureStrategy.BUFFER)
         }
+        syncDao = mock {
+            on { loadSync("source") } doReturn
+                Single.just(Db.Sync("source",
+                        Date().time - TimeUnit.DAYS.toMillis(2)))
+        }
         newsApi = mock()
         worker = TestScheduler()
         val newsDb: NewsDb = mock {
             on { sourceDao() } doReturn sourceDao
+            on { syncDao() } doReturn syncDao
         }
         model = SourceModel(newsDb, newsApi, worker)
     }
@@ -85,6 +95,9 @@ class SourceModelTest {
         verify(sourceDao).saveSourceSelections(check { selections ->
             assertThat(selections)
                     .containsExactly(Db.SourceSelection("source1", false))
+        })
+        verify(syncDao).saveSync(argThat {
+            resource == "source"
         })
         assertThat(subscriber.values())
                 .hasSize(2)
@@ -162,6 +175,23 @@ class SourceModelTest {
         assertThat(subscriber.values())
                 .hasSize(4)
                 .containsExactly(Result.Syncing, Result.Error(error), Result.Syncing, Result.Synced)
+    }
+
+    @Test
+    fun `Refresh action should should not resync if last sync time is less than 5 mins`() {
+        // GIVEN
+        whenever(syncDao.loadSync("source"))
+                .thenReturn(Single.just(Db.Sync("source",
+                        Date().time - TimeUnit.MINUTES.toMillis(4))))
+        val subscriber = TestSubscriber<Result>()
+        val results = model.observe(Flowable.just(Action.Refresh))
+
+        // WHEN
+        results.subscribe(subscriber)
+        worker.advanceTimeBy(1, TimeUnit.MILLISECONDS)
+
+        // THEN
+        verify(newsApi, never()).getSources()
     }
 
     @Test

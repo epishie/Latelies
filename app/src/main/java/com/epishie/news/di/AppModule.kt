@@ -1,6 +1,5 @@
 package com.epishie.news.di
 
-import android.arch.persistence.room.Room
 import android.content.Context
 import com.epishie.news.App
 import com.epishie.news.model.db.NewsDb
@@ -34,10 +33,7 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideNewsDb(context: Context): NewsDb {
-        return Room.inMemoryDatabaseBuilder(context, NewsDb::class.java)
-                .build()
-    }
+    fun provideNewsDb(app: App): NewsDb = app.createDb()
 
     @Singleton
     @Provides
