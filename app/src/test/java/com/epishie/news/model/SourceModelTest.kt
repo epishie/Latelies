@@ -163,4 +163,21 @@ class SourceModelTest {
                 .hasSize(4)
                 .containsExactly(Result.Syncing, Result.Error(error), Result.Syncing, Result.Synced)
     }
+
+    @Test
+    fun `Select action should update DB and not emit result`() {
+        // GIVEN
+        val subscriber = TestSubscriber<Result>()
+        val selection = Db.SourceSelection("1", true)
+        val results = model.observe(Flowable.just(Action.Select(selection)))
+
+        // WHEN
+        results.subscribe(subscriber)
+        worker.advanceTimeBy(1, TimeUnit.MILLISECONDS)
+
+        // THEN
+        verify(sourceDao).updateSourceSelection(selection)
+        assertThat(subscriber.values())
+                .isEmpty()
+    }
 }

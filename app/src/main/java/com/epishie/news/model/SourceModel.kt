@@ -3,6 +3,7 @@ package com.epishie.news.model
 import com.epishie.news.model.db.Db
 import com.epishie.news.model.db.NewsDb
 import com.epishie.news.model.network.NewsApi
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Scheduler
 import javax.inject.Inject
@@ -25,6 +26,15 @@ class SourceModel
     }
 
     private fun createResultsFromActions(actions: Flowable<Action>): Flowable<Result> {
+        return actions.publish { shared ->
+            Flowable.merge(
+                    shared.ofType(Action.Refresh::class.java).compose(this::refreshAction),
+                    shared.ofType(Action.Select::class.java).compose(this::selectAction)
+            )
+        }
+    }
+
+    private fun refreshAction(actions: Flowable<Action.Refresh>): Flowable<Result> {
         return actions.flatMap {
             val sync = newsApi.getSources()
                     .subscribeOn(worker)
@@ -45,6 +55,16 @@ class SourceModel
             }.onErrorResumeNext { error: Throwable ->
                 Flowable.just(Result.Error(error))
             }.startWith(Result.Syncing)
+        }
+    }
+
+    private fun selectAction(actions: Flowable<Action.Select>): Flowable<Result> {
+        return actions.flatMap { (selection) ->
+            Flowable.create<Result>({ emitter ->
+                sourceDao.updateSourceSelection(selection)
+                emitter.onComplete()
+            }, BackpressureStrategy.BUFFER)
+                    .subscribeOn(worker)
         }
     }
 
@@ -69,5 +89,6 @@ class SourceModel
     }
     sealed class Action {
         object Refresh : Action()
+        data class Select(val selection: Db.SourceSelection) : Action()
     }
 }

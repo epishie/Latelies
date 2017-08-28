@@ -44,11 +44,19 @@ class SourcesFragment : BottomSheetDialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        disposable = vm.update(Flowable.just(SourcesViewModel.Event.Refresh))
+        val selections = adapter.selections.map { source ->
+            SourcesViewModel.Event.Select(source)
+        }
+        val events = Flowable.merge(
+                Flowable.just(SourcesViewModel.Event.Refresh),
+                selections
+        )
+
+        disposable = vm.update(events)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { state ->
-                    progress.visibility = if (state.progress) View.VISIBLE else View.GONE
-                    adapter.sources = state.sources
+                .subscribe { (progress, _, sources) ->
+                    this.progress.visibility = if (progress) View.VISIBLE else View.GONE
+                    adapter.sources = sources
                 }
     }
 

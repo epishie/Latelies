@@ -15,10 +15,15 @@ class SourcesViewModel
     private var lastState = State(false, "", emptyList())
 
     fun update(events: Flowable<Event>): Flowable<State> {
-        val actions = events.flatMap { event ->
-            when (event) {
-                Event.Refresh -> Flowable.just<Action>(Action.Refresh)
-            }
+        val actions = events.publish { shared ->
+            Flowable.merge(
+                    shared.ofType(Event.Refresh::class.java).map {
+                        Action.Refresh
+                    },
+                    shared.ofType(Event.Select::class.java).map { (source) ->
+                        Action.Select(Db.SourceSelection(source.id, source.selected))
+                    }
+            )
         }
         return sourceModel.observe(actions)
                 .scan(lastState, this::reduce)
@@ -43,5 +48,6 @@ class SourcesViewModel
     data class Source(val id: String, val name: String, val logo: String, val selected: Boolean)
     sealed class Event {
         object Refresh : Event()
+        data class Select(val source: Source) : Event()
     }
 }

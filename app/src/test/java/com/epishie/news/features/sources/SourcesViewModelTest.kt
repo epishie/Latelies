@@ -114,4 +114,28 @@ class SourcesViewModelTest {
         assertThat(subscriber.values())
                 .containsExactly(SourceModel.Action.Refresh)
     }
+
+    @Test
+    fun `Select event should trigger a Select action`() {
+        // GIVEN
+        val subscriber = TestSubscriber<SourceModel.Action>()
+        whenever(model.observe(any())).then { invocation ->
+            @Suppress("UNCHECKED_CAST")
+            val events = (invocation.arguments[0] as Flowable<SourceModel.Action>)
+            events.subscribe(subscriber)
+            return@then Flowable.empty<SourceModel.Action>()
+        }
+
+        // WHEN
+        vm.update(Flowable.just(SourcesViewModel.Event.Select(
+                SourcesViewModel.Source("source1",
+                        "Source 1",
+                        "http://source1.com",
+                        true)
+        )))
+
+        // THEN
+        assertThat(subscriber.values())
+                .containsExactly(SourceModel.Action.Select(Db.SourceSelection("source1", true)))
+    }
 }

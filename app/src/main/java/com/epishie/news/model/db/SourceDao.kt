@@ -1,9 +1,6 @@
 package com.epishie.news.model.db
 
-import android.arch.persistence.room.Dao
-import android.arch.persistence.room.Insert
-import android.arch.persistence.room.OnConflictStrategy
-import android.arch.persistence.room.Query
+import android.arch.persistence.room.*
 import io.reactivex.Flowable
 
 @Dao
@@ -20,4 +17,6 @@ abstract class SourceDao {
     abstract fun saveSourceBases(sources: List<Db.SourceBase>)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract fun saveSourceSelections(sources: List<Db.SourceSelection>)
+    @Update
+    abstract fun updateSourceSelection(source: Db.SourceSelection)
 }
