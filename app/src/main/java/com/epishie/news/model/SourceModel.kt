@@ -35,18 +35,19 @@ class SourceModel
     private fun createResultsFromActions(actions: Flowable<Action>): Flowable<Result> {
         return actions.publish { shared ->
             Flowable.merge(
-                    shared.ofType(Action.Refresh::class.java).compose(this::refreshAction),
+                    shared.ofType(Action.Sync::class.java).compose(this::refreshAction),
                     shared.ofType(Action.Select::class.java).compose(this::selectAction)
             )
         }
     }
 
-    private fun refreshAction(actions: Flowable<Action.Refresh>): Flowable<Result> {
+    private fun refreshAction(actions: Flowable<Action.Sync>): Flowable<Result> {
         return actions
                 .flatMap {
                     Flowable.fromPublisher<Db.Sync> { subscriber ->
                         syncDao.loadSync(SYNC_RESOURCE)
                                 .toFlowable()
+                                .onErrorResumeNext(Flowable.just(Db.Sync(SYNC_RESOURCE, 0)))
                                 .subscribe(subscriber)
                     }.subscribeOn(worker)
                 }
@@ -108,7 +109,7 @@ class SourceModel
         data class Error(val throwable: Throwable) : Result()
     }
     sealed class Action {
-        object Refresh : Action()
+        object Sync : Action()
         data class Select(val selection: Db.SourceSelection) : Action()
     }
 }

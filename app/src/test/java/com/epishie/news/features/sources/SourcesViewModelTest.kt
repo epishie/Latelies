@@ -41,6 +41,27 @@ class SourcesViewModelTest {
     }
 
     @Test
+    fun `state should be retained on subsequent update calls`() {
+        // GIVEN
+        whenever(model.observe(any()))
+                .thenReturn(Flowable.just(SourceModel.Result.Syncing),
+                        Flowable.empty())
+        val subscriber1 = TestSubscriber<SourcesViewModel.State>()
+        val subscriber2 = TestSubscriber<SourcesViewModel.State>()
+
+        // WHEN
+        vm.update(Flowable.empty())
+                .subscribe(subscriber1)
+        subscriber1.dispose()
+        vm.update(Flowable.empty())
+                .subscribe(subscriber2)
+
+        // THEN
+        assertThat(subscriber2.values())
+                .containsExactly(SourcesViewModel.State(true, "", emptyList()))
+    }
+
+    @Test
     fun `DB update should emit a state with sources`() {
         // GIVEN
         val inputSource = Db.Source("source1", "Source 1", "http://source1.com",
@@ -112,7 +133,7 @@ class SourcesViewModelTest {
 
         // THEN
         assertThat(subscriber.values())
-                .containsExactly(SourceModel.Action.Refresh)
+                .containsExactly(SourceModel.Action.Sync)
     }
 
     @Test

@@ -1,4 +1,4 @@
-package com.epishie.news.features
+package com.epishie.news.features.sources
 
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
@@ -10,18 +10,20 @@ import android.view.ViewGroup
 import com.epishie.news.R
 import com.epishie.news.component
 import com.epishie.news.features.common.inflate
-import com.epishie.news.features.sources.SourcesAdapter
-import com.epishie.news.features.sources.SourcesViewModel
 import io.reactivex.Flowable
-import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.Scheduler
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.sources_fragment.*
 import kotlinx.android.synthetic.main.sources_fragment.view.*
+import javax.inject.Inject
+import javax.inject.Named
 
 class SourcesFragment : BottomSheetDialogFragment() {
     lateinit var vm: SourcesViewModel
     lateinit var disposable: Disposable
     lateinit var adapter: SourcesAdapter
+    @field:[Inject Named("ui")]
+    lateinit var ui: Scheduler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +55,7 @@ class SourcesFragment : BottomSheetDialogFragment() {
         )
 
         disposable = vm.update(events)
-                .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(ui)
                 .subscribe { (progress, _, sources) ->
                     this.progress.visibility = if (progress) View.VISIBLE else View.GONE
                     adapter.sources = sources

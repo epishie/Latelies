@@ -4,6 +4,7 @@ import android.content.Context
 import com.epishie.news.App
 import com.epishie.news.model.db.NewsDb
 import com.epishie.news.model.network.NewsApi
+import com.f2prateek.rx.preferences2.RxSharedPreferences
 import dagger.Module
 import dagger.Provides
 import io.reactivex.Scheduler
@@ -44,5 +45,11 @@ class AppModule {
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
                 .create(NewsApi::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun providePreferences(app: App): RxSharedPreferences {
+        return app.createSharedPrefs()
     }
 }

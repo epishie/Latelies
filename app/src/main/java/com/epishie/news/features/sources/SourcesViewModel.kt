@@ -18,7 +18,7 @@ class SourcesViewModel
         val actions = events.publish { shared ->
             Flowable.merge(
                     shared.ofType(Event.Refresh::class.java).map {
-                        Action.Refresh
+                        Action.Sync
                     },
                     shared.ofType(Event.Select::class.java).map { (source) ->
                         Action.Select(Db.SourceSelection(source.id, source.selected))
@@ -27,6 +27,7 @@ class SourcesViewModel
         }
         return sourceModel.observe(actions)
                 .scan(lastState, this::reduce)
+                .doOnNext { state -> lastState = state }
     }
 
     private fun reduce(state: State, result: SourceModel.Result): State {

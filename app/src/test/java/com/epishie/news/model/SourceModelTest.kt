@@ -79,7 +79,7 @@ class SourceModelTest {
         val result = NewsApi.SourceResult("ok", listOf(source))
         whenever(newsApi.getSources()).thenReturn(Flowable.just(result))
         val subscriber = TestSubscriber<Result>()
-        val results = model.observe(Flowable.just(Action.Refresh))
+        val results = model.observe(Flowable.just(Action.Sync))
 
         // WHEN
         results.subscribe(subscriber)
@@ -110,7 +110,7 @@ class SourceModelTest {
         val error = IOException()
         whenever(newsApi.getSources()).thenReturn(Flowable.error(error))
         val subscriber = TestSubscriber<Result>()
-        val results = model.observe(Flowable.just(Action.Refresh))
+        val results = model.observe(Flowable.just(Action.Sync))
 
         // WHEN
         results.subscribe(subscriber)
@@ -131,7 +131,7 @@ class SourceModelTest {
         val result = NewsApi.SourceResult("error", null)
         whenever(newsApi.getSources()).thenReturn(Flowable.just(result))
         val subscriber = TestSubscriber<Result>()
-        val results = model.observe(Flowable.just(Action.Refresh))
+        val results = model.observe(Flowable.just(Action.Sync))
 
         // WHEN
         results.subscribe(subscriber)
@@ -165,9 +165,9 @@ class SourceModelTest {
 
         // WHEN
         results.subscribe(subscriber)
-        actions.onNext(Action.Refresh)
+        actions.onNext(Action.Sync)
         worker.advanceTimeBy(1, TimeUnit.MILLISECONDS)
-        actions.onNext(Action.Refresh)
+        actions.onNext(Action.Sync)
         worker.advanceTimeBy(1, TimeUnit.MILLISECONDS)
 
         // THEN
@@ -184,7 +184,7 @@ class SourceModelTest {
                 .thenReturn(Single.just(Db.Sync("source",
                         Date().time - TimeUnit.MINUTES.toMillis(4))))
         val subscriber = TestSubscriber<Result>()
-        val results = model.observe(Flowable.just(Action.Refresh))
+        val results = model.observe(Flowable.just(Action.Sync))
 
         // WHEN
         results.subscribe(subscriber)
