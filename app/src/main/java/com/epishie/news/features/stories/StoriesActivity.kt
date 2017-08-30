@@ -16,6 +16,9 @@ class StoriesActivity : AppCompatActivity() {
     }
 
     private fun setupView() {
+        setSupportActionBar(toolbar)
+        supportActionBar?.setTitle(R.string.title_headlines)
+
         RxView.clicks(filterButton)
                 .subscribe {
                     SourcesFragment().show(supportFragmentManager, null)

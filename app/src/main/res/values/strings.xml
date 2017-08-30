@@ -1,7 +1,10 @@
 <resources>
-    <string name="app_name">News</string>
+    <string name="app_name">Latelies</string>
+    <string name="app_title">latelies</string>
 
     <string name="title_sources">Pick your news source</string>
     <string name="error_sources">Can\'t load news sources</string>
     <string name="retry">Retry</string>
+
+    <string name="title_headlines">Headlines</string>
 </resources>
