@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Latelies</string>
     <string name="app_title">latelies</string>
+    <string name="attribution">powered by NewsAPI.org</string>
 
     <string name="title_sources">Pick your news source</string>
     <string name="error_sources">Can\'t load news sources</string>
