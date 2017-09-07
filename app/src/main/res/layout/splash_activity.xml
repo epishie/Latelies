@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <android.support.constraint.Guideline
@@ -26,15 +27,8 @@
         android:fontFamily="@font/pacifico"
         android:textColor="@color/textDark"
         android:text="@string/app_title" />
-    <ProgressBar
-        android:id="@+id/progress"
-        android:layout_width="@dimen/icon_size"
-        android:layout_height="@dimen/icon_size"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/center"
-        android:layout_marginTop="@dimen/gap_1" />
     <TextView
+        android:id="@+id/attribution"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
@@ -43,4 +37,41 @@
         android:layout_marginBottom="@dimen/gap_2"
         android:textAppearance="@style/TextAppearance.AppCompat.Caption"
         android:text="@string/attribution" />
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="@dimen/icon_size"
+        android:layout_height="@dimen/icon_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/attribution"
+        android:layout_marginBottom="@dimen/gap_6" />
+    <Button
+        android:id="@+id/retry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/progress"
+        android:text="@string/retry"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored" />
+    <TextView
+        android:id="@+id/errorDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/progress"
+        android:layout_marginBottom="@dimen/gap_2"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        tools:text="There seems to be no internet connection" />
+    <TextView
+        android:id="@+id/errorTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/errorDescription"
+        android:layout_marginBottom="@dimen/gap_2"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        android:text="@string/error_oops" />
 </android.support.constraint.ConstraintLayout>

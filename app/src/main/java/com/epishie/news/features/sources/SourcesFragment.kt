@@ -58,7 +58,7 @@ class SourcesFragment : BottomSheetDialogFragment() {
                 .observeOn(ui)
                 .subscribe { (progress, _, sources) ->
                     this.progress.visibility = if (progress) View.VISIBLE else View.GONE
-                    adapter.sources = sources
+                    adapter.sources = sources ?: emptyList()
                 }
     }
 

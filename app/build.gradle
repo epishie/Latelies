@@ -55,11 +55,14 @@ dependencies {
             "com.squareup.retrofit2:converter-gson:$retrofitVersion",
             "com.squareup.retrofit2:adapter-rxjava2:$retrofitVersion",
             "com.squareup.picasso:picasso:2.5.2",
-            "com.jakewharton.rxbinding2:rxbinding:$rxBindingVersion",
+            "com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0",
+            "com.jakewharton.rxbinding2:rxbinding-kotlin:$rxBindingVersion",
+            "com.jakewharton.rxbinding2:rxbinding-support-v4-kotlin:$rxBindingVersion",
             "com.f2prateek.rx.preferences2:rx-preferences:2.0.0-RC3",
             "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     compileOnly "javax.annotation:jsr250-api:1.0"
-    debugImplementation "com.facebook.stetho:stetho:1.5.0"
+    debugImplementation "com.facebook.stetho:stetho:1.5.0",
+            "com.facebook.stetho:stetho-okhttp3:1.5.0"
     kapt "android.arch.lifecycle:compiler:$archLibVersion",
             "com.google.dagger:dagger-compiler:$daggerVersion",
             "android.arch.persistence.room:compiler:$archLibVersion"

@@ -3,6 +3,7 @@
     <dimen name="gap_0">4dp</dimen>
     <dimen name="gap_1">8dp</dimen>
     <dimen name="gap_2">16dp</dimen>
+    <dimen name="gap_6">48dp</dimen>
 
     <dimen name="key_line_1">16dp</dimen>
     <dimen name="key_line_2">72dp</dimen>
@@ -12,4 +13,5 @@
     <dimen name="row_size_1">48dp</dimen>
 
     <dimen name="source_logo_size">56dp</dimen>
+    <dimen name="story_size">128dp</dimen>
 </resources>

@@ -4,6 +4,7 @@ import com.epishie.news.App
 import com.epishie.news.features.sources.SourcesFragment
 import com.epishie.news.features.common.ViewModelFactory
 import com.epishie.news.features.splash.SplashActivity
+import com.epishie.news.features.stories.StoriesActivity
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton
@@ -20,6 +21,8 @@ interface AppComponent {
 
     fun vmFactory(): ViewModelFactory
 
+    fun inject(app: App)
     fun inject(activity: SplashActivity)
+    fun inject(activity: StoriesActivity)
     fun inject(fragment: SourcesFragment)
 }

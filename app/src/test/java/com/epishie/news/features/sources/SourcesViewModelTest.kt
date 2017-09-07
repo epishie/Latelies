@@ -3,8 +3,10 @@
 package com.epishie.news.features.sources
 
 import com.epishie.news.features.common.toLogoUrl
-import com.epishie.news.model.NetworkSyncError
+import com.epishie.news.model.NewsApiError
+import com.epishie.news.model.SourceAction
 import com.epishie.news.model.SourceModel
+import com.epishie.news.model.SourceResult
 import com.epishie.news.model.db.Db
 import com.nhaarman.mockito_kotlin.*
 import io.reactivex.Flowable
@@ -24,7 +26,7 @@ class SourcesViewModelTest {
     }
 
     @Test
-    fun `should emit an initial state`() {
+    fun `update() should emit an initial state`() {
         // GIVEN
         whenever(model.observe(any()))
                 .thenReturn(Flowable.empty())
@@ -36,15 +38,14 @@ class SourcesViewModelTest {
 
         // THEN
         assertThat(subscriber.values())
-                .hasSize(1)
-                .containsExactly(SourcesViewModel.State(false, "", emptyList()))
+                .containsExactly(SourcesViewModel.State())
     }
 
     @Test
-    fun `state should be retained on subsequent update calls`() {
+    fun `subsequent update() should emit last state`() {
         // GIVEN
         whenever(model.observe(any()))
-                .thenReturn(Flowable.just(SourceModel.Result.Syncing),
+                .thenReturn(Flowable.just(SourceResult.Syncing),
                         Flowable.empty())
         val subscriber1 = TestSubscriber<SourcesViewModel.State>()
         val subscriber2 = TestSubscriber<SourcesViewModel.State>()
@@ -58,16 +59,16 @@ class SourcesViewModelTest {
 
         // THEN
         assertThat(subscriber2.values())
-                .containsExactly(SourcesViewModel.State(true, "", emptyList()))
+                .containsExactly(SourcesViewModel.State(true))
     }
 
     @Test
-    fun `DB update should emit a state with sources`() {
+    fun `update() should emit a state with sources`() {
         // GIVEN
         val inputSource = Db.Source("source1", "Source 1", "http://source1.com",
                 false)
         whenever(model.observe(any()))
-                .thenReturn(Flowable.just(SourceModel.Result.Update(listOf(inputSource))))
+                .thenReturn(Flowable.just(SourceResult.Update(listOf(inputSource))))
         val subscriber = TestSubscriber<SourcesViewModel.State>()
 
         // WHEN
@@ -78,15 +79,15 @@ class SourcesViewModelTest {
         val source = SourcesViewModel.Source("source1", "Source 1",
                 "http://source1.com".toLogoUrl(), false)
         assertThat(subscriber.values())
-                .containsExactly(SourcesViewModel.State(false, "", emptyList()),
-                        SourcesViewModel.State(false, "", listOf(source)))
+                .containsExactly(SourcesViewModel.State(),
+                        SourcesViewModel.State(sources = listOf(source)))
     }
 
     @Test
-    fun `Sync should emit states with progress = true and progress = false`() {
+    fun `update() should emit states with progress = true and progress = false on sync result`() {
         // GIVEN
         whenever(model.observe(any()))
-                .thenReturn(Flowable.just(SourceModel.Result.Syncing, SourceModel.Result.Synced))
+                .thenReturn(Flowable.just(SourceResult.Syncing, SourceResult.Synced))
         val subscriber = TestSubscriber<SourcesViewModel.State>()
 
         // WHEN
@@ -95,16 +96,17 @@ class SourcesViewModelTest {
 
         // THEN
         assertThat(subscriber.values())
-                .containsExactly(SourcesViewModel.State(false, "", emptyList()),
-                        SourcesViewModel.State(true, "", emptyList()),
-                        SourcesViewModel.State(false, "", emptyList()))
+                .containsExactly(SourcesViewModel.State(),
+                        SourcesViewModel.State(progress = true),
+                        SourcesViewModel.State())
     }
 
     @Test
-    fun `Error should emit states with non-empty error`() {
+    fun `update() should emit states with non-empty error on error result`() {
         // GIVEN
+        val error = NewsApiError()
         whenever(model.observe(any()))
-                .thenReturn(Flowable.just(SourceModel.Result.Error(NetworkSyncError())))
+                .thenReturn(Flowable.just(SourceResult.Error(error)))
         val subscriber = TestSubscriber<SourcesViewModel.State>()
 
         // WHEN
@@ -113,19 +115,19 @@ class SourcesViewModelTest {
 
         // THEN
         assertThat(subscriber.values())
-                .containsExactly(SourcesViewModel.State(false, "", emptyList()),
-                        SourcesViewModel.State(false, "Error", emptyList()))
+                .containsExactly(SourcesViewModel.State(),
+                        SourcesViewModel.State(error = error))
     }
 
     @Test
-    fun `Refresh event should trigger a Refresh action`() {
+    fun `update(Refresh) should trigger a Refresh action`() {
         // GIVEN
-        val subscriber = TestSubscriber<SourceModel.Action>()
+        val subscriber = TestSubscriber<SourceAction>()
         whenever(model.observe(any())).then { invocation ->
             @Suppress("UNCHECKED_CAST")
-            val events = (invocation.arguments[0] as Flowable<SourceModel.Action>)
+            val events = (invocation.arguments[0] as Flowable<SourceAction>)
             events.subscribe(subscriber)
-            return@then Flowable.empty<SourceModel.Action>()
+            return@then Flowable.empty<SourceAction>()
         }
 
         // WHEN
@@ -133,30 +135,28 @@ class SourcesViewModelTest {
 
         // THEN
         assertThat(subscriber.values())
-                .containsExactly(SourceModel.Action.Sync)
+                .containsExactly(SourceAction.Sync)
     }
 
     @Test
-    fun `Select event should trigger a Select action`() {
+    fun `update(Select) should trigger a Select action`() {
         // GIVEN
-        val subscriber = TestSubscriber<SourceModel.Action>()
+        val subscriber = TestSubscriber<SourceAction>()
         whenever(model.observe(any())).then { invocation ->
             @Suppress("UNCHECKED_CAST")
-            val events = (invocation.arguments[0] as Flowable<SourceModel.Action>)
+            val events = (invocation.arguments[0] as Flowable<SourceAction>)
             events.subscribe(subscriber)
-            return@then Flowable.empty<SourceModel.Action>()
+            return@then Flowable.empty<SourceAction>()
         }
 
         // WHEN
         vm.update(Flowable.just(SourcesViewModel.Event.Select(
-                SourcesViewModel.Source("source1",
-                        "Source 1",
-                        "http://source1.com",
+                SourcesViewModel.Source("source1", "Source 1", "http://source1.com",
                         true)
         )))
 
         // THEN
         assertThat(subscriber.values())
-                .containsExactly(SourceModel.Action.Select(Db.SourceSelection("source1", true)))
+                .containsExactly(SourceAction.Select(Db.SourceSelection("source1", true)))
     }
 }

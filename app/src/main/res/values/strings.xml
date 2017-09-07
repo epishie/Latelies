@@ -8,4 +8,9 @@
     <string name="retry">Retry</string>
 
     <string name="title_headlines">Headlines</string>
+
+    <!-- General Errors -->
+    <string name="error_oops">Oops!</string>
+    <string name="error_unknown">Sorry about that, there\'s something wrong</string>
+    <string name="error_no_internet">There seems to be no internet connection</string>
 </resources>

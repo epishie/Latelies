@@ -8,16 +8,19 @@ import android.view.View
 import com.epishie.news.R
 import com.epishie.news.component
 import com.epishie.news.features.stories.StoriesActivity
-import io.reactivex.Flowable
+import com.jakewharton.rxbinding2.view.clicks
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Scheduler
 import kotlinx.android.synthetic.main.splash_activity.*
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Named
 
 class SplashActivity : AppCompatActivity() {
-    lateinit var vm: SplashViewModel
     @field:[Inject Named("ui")]
     lateinit var ui: Scheduler
+    private lateinit var vm: SplashViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,17 +31,35 @@ class SplashActivity : AppCompatActivity() {
         setupView()
     }
 
-    fun setupView() {
-        vm.update(Flowable.empty())
+    private fun setupView() {
+        val events = retry.clicks()
+                .map { SplashViewModel.Event.RetryEvent as SplashViewModel.Event }
+                .toFlowable(BackpressureStrategy.BUFFER)
+        vm.update(events)
                 .observeOn(ui)
-                .subscribe { state ->
-                    if (state.success) {
-                        startActivity(Intent(this, StoriesActivity::class.java))
-                        finish()
-                        return@subscribe
-                    }
+                .subscribe(this::renderState)
+    }
 
-                    progress.visibility = if (state.progress) View.VISIBLE else View.GONE
-                }
+    private fun renderState(state: SplashViewModel.State) {
+        if (state.success) {
+            startActivity(Intent(this, StoriesActivity::class.java))
+            finish()
+            return
+        }
+
+        progress.visibility = if (state.progress) View.VISIBLE else View.INVISIBLE
+        if (state.error != null) {
+            errorTitle.visibility = View.VISIBLE
+            errorDescription.visibility = View.VISIBLE
+            retry.visibility = View.VISIBLE
+            errorDescription.text = when (state.error) {
+                is IOException -> getString(R.string.error_no_internet)
+                else -> getString(R.string.error_unknown)
+            }
+        } else {
+            errorTitle.visibility = View.INVISIBLE
+            errorDescription.visibility = View.INVISIBLE
+            retry.visibility = View.INVISIBLE
+        }
     }
 }

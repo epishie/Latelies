@@ -2,7 +2,9 @@ package com.epishie.news.features.splash
 
 import android.arch.lifecycle.ViewModel
 import com.epishie.news.model.SettingsModel
+import com.epishie.news.model.SourceAction
 import com.epishie.news.model.SourceModel
+import com.epishie.news.model.SourceResult
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import javax.inject.Inject
@@ -19,13 +21,13 @@ class SplashViewModel
         val actions = Flowable.merge(
                 dbInitialized.flatMap { result ->
                     when (result)  {
-                        true -> Flowable.empty<SourceModel.Action>()
-                        else -> Flowable.just(SourceModel.Action.Sync)
+                        true -> Flowable.empty<SourceAction>()
+                        else -> Flowable.just(SourceAction.Sync)
                     }
                 },
                 events.flatMap { event ->
                     when (event) {
-                        is SplashViewModel.Event.RetryEvent -> Flowable.just(SourceModel.Action.Sync)
+                        is SplashViewModel.Event.RetryEvent -> Flowable.just(SourceAction.Sync)
                     }
                 }
         )
@@ -33,7 +35,7 @@ class SplashViewModel
         val sourceResults = sourceModel.observe(actions)
                 .publish()
                 .autoConnect(2)
-        sourceResults.filter{ result -> result == SourceModel.Result.Synced }
+        sourceResults.filter{ result -> result == SourceResult.Synced }
                 .map { true }
                 .subscribe(settingsModel.dbInitialized.asConsumer())
 
@@ -44,14 +46,15 @@ class SplashViewModel
     private fun reduce(state: State, result: Any): State {
         return when (result) {
             is Boolean -> State(success = true)
-            is SourceModel.Result.Syncing -> State(progress = true)
-            is SourceModel.Result.Error -> State(error = "Error")
+            is SourceResult.Syncing -> State(progress = true)
+            is SourceResult.Error -> State(error = result.throwable)
             else -> state
         }
     }
 
     data class State(val progress: Boolean = false, val success: Boolean = false,
-                     val error: String? = null)
+                     val error: Throwable? = null)
+
     sealed class Event {
         object RetryEvent : Event()
     }

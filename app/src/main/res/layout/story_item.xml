@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="156dp"
+    android:clickable="true"
+    android:foreground="?attr/selectableItemBackground">
+    <ImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        android:layout_marginStart="@dimen/gap_1"
+        android:layout_marginTop="@dimen/gap_1"
+        android:layout_marginBottom="@dimen/gap_1" />
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/thumbnail"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/sourceLogo"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_bias="0"
+        android:layout_marginStart="@dimen/gap_1"
+        android:layout_marginEnd="@dimen/gap_1"
+        android:layout_marginTop="@dimen/gap_1"
+        android:maxLines="3"
+        android:ellipsize="end"
+        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+        android:textStyle="bold"
+        tools:text="This is a sample article title that spans multiple lines. It could go on and on"/>
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/title"
+        app:layout_constraintEnd_toEndOf="@id/title"
+        app:layout_constraintTop_toBottomOf="@id/sourceLogo"
+        app:layout_constraintBottom_toBottomOf="@id/thumbnail"
+        android:layout_marginTop="@dimen/gap_0"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:maxLines="4"
+        android:ellipsize="end"
+        tools:text="This is a sample article description that also spans muiltiple lines. It could also be in a paragraph that spans multiple sentences."/>
+    <ImageView
+        android:id="@+id/sourceLogo"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        app:layout_constraintStart_toStartOf="@id/title"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintBottom_toTopOf="@+id/description" />
+    <TextView
+        android:id="@+id/source"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/sourceLogo"
+        app:layout_constraintTop_toTopOf="@id/sourceLogo"
+        app:layout_constraintBottom_toBottomOf="@id/sourceLogo"
+        android:layout_marginStart="@dimen/gap_1"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        tools:text="The Guardian" />
+</android.support.constraint.ConstraintLayout>
