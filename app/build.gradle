@@ -4,6 +4,10 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'jacoco'
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.0"
@@ -16,7 +20,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        buildConfigField 'String', 'NEWS_API_KEY', "\"$NEWS_API_KEY\""
+        buildConfigField 'String', 'NEWS_API_KEY', "\"${keystoreProperties.getProperty("NewsApiKey")}\""
     }
     buildTypes {
         debug {
