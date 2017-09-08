@@ -51,7 +51,8 @@
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/progress"
+        app:layout_constraintBottom_toBottomOf="@+id/attribution"
+        android:layout_marginBottom="@dimen/gap_6"
         android:text="@string/retry"
         style="@style/Widget.AppCompat.Button.Borderless.Colored" />
     <TextView
@@ -60,7 +61,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/progress"
+        app:layout_constraintBottom_toTopOf="@id/retry"
         android:layout_marginBottom="@dimen/gap_2"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         tools:text="There seems to be no internet connection" />

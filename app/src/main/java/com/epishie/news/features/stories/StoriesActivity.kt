@@ -3,28 +3,26 @@ package com.epishie.news.features.stories
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import com.epishie.news.R
 import com.epishie.news.component
+import com.epishie.news.features.common.BaseActivity
 import com.epishie.news.features.sources.SourcesFragment
 import com.jakewharton.rxbinding2.support.v4.widget.refreshes
 import com.jakewharton.rxbinding2.support.v4.widget.refreshing
 import com.jakewharton.rxbinding2.view.RxView
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Scheduler
-import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.stories_activity.*
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Named
 
-class StoriesActivity : AppCompatActivity() {
-    lateinit var vm: StoriesViewModel
+class StoriesActivity : BaseActivity() {
     @field:[Inject Named("ui")]
     lateinit var ui: Scheduler
-    lateinit var disposable: Disposable
-    lateinit var storiesAdapter: StoriesAdapter
+    private  lateinit var vm: StoriesViewModel
+    private lateinit var storiesAdapter: StoriesAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,11 +31,6 @@ class StoriesActivity : AppCompatActivity() {
 
         setContentView(R.layout.stories_activity)
         setupView()
-    }
-
-    override fun onDestroy() {
-        disposable.dispose()
-        super.onDestroy()
     }
 
     private fun setupView() {
@@ -77,6 +70,6 @@ class StoriesActivity : AppCompatActivity() {
             }
         }
 
-        disposable = states.connect()
+        disposables.add(states.connect())
     }
 }

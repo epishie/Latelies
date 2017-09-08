@@ -5,11 +5,12 @@ import android.arch.persistence.room.Insert
 import android.arch.persistence.room.OnConflictStrategy
 import android.arch.persistence.room.Query
 import io.reactivex.Flowable
+import io.reactivex.Single
 
 @Dao
 abstract class StoryDao {
     companion object {
-        const val STORY_PROJECTION = "SELECT b.url AS url, " +
+        const val STORY_QUERY = "SELECT b.url AS url, " +
                 "   b.title AS title, " +
                 "   b.description AS description, " +
                 "   b.author AS author, " +
@@ -22,12 +23,15 @@ abstract class StoryDao {
                 "   r.read AS read " +
                 "FROM story_bases AS b " +
                 "INNER JOIN story_extras AS r ON b.url = r.url " +
-                "INNER JOIN (${SourceDao.SOURCE_PROJECTION_SELECTED}) AS s ON b.source = s.id " +
-                "ORDER BY date DESC"
+                "INNER JOIN (${SourceDao.SOURCE_SELECTED_QUERY}) AS s ON b.source = s.id"
+        const val STORY_BY_URL_QUERY = "$STORY_QUERY " +
+                "WHERE b.url = :url"
     }
 
-    @Query(STORY_PROJECTION)
+    @Query(STORY_QUERY + " ORDER BY date DESC")
     abstract fun loadAllStories(): Flowable<List<Db.Story>>
+    @Query(STORY_BY_URL_QUERY)
+    abstract fun loadStory(url: String): Flowable<List<Db.Story>>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun saveStoryBases(stories: List<Db.StoryBase>)
     @Insert(onConflict = OnConflictStrategy.IGNORE)

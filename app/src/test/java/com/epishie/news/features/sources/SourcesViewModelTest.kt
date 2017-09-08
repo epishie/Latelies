@@ -1,4 +1,4 @@
-@file:Suppress("IllegalIdentifier")
+@file:Suppress("IllegalIdentifier", "MemberVisibilityCanPrivate")
 
 package com.epishie.news.features.sources
 
@@ -79,8 +79,7 @@ class SourcesViewModelTest {
         val source = SourcesViewModel.Source("source1", "Source 1",
                 "http://source1.com".toLogoUrl(), false)
         assertThat(subscriber.values())
-                .containsExactly(SourcesViewModel.State(),
-                        SourcesViewModel.State(sources = listOf(source)))
+                .contains(SourcesViewModel.State(sources = listOf(source)))
     }
 
     @Test
@@ -96,13 +95,12 @@ class SourcesViewModelTest {
 
         // THEN
         assertThat(subscriber.values())
-                .containsExactly(SourcesViewModel.State(),
-                        SourcesViewModel.State(progress = true),
+                .containsSubsequence(SourcesViewModel.State(progress = true),
                         SourcesViewModel.State())
     }
 
     @Test
-    fun `update() should emit states with non-empty error on error result`() {
+    fun `update() should emit states with error on error result`() {
         // GIVEN
         val error = NewsApiError()
         whenever(model.observe(any()))
@@ -115,8 +113,26 @@ class SourcesViewModelTest {
 
         // THEN
         assertThat(subscriber.values())
-                .containsExactly(SourcesViewModel.State(),
-                        SourcesViewModel.State(error = error))
+                .contains(SourcesViewModel.State(error = error))
+    }
+
+    @Test
+    fun `update() should trigger a Get action`() {
+        // GIVEN
+        val subscriber = TestSubscriber<SourceAction>()
+        whenever(model.observe(any())).then { invocation ->
+            @Suppress("UNCHECKED_CAST")
+            val events = (invocation.arguments[0] as Flowable<SourceAction>)
+            events.subscribe(subscriber)
+            return@then Flowable.empty<SourceAction>()
+        }
+
+        // WHEN
+        vm.update(Flowable.empty())
+
+        // THEN
+        assertThat(subscriber.values())
+                .contains(SourceAction.Get)
     }
 
     @Test
@@ -135,7 +151,7 @@ class SourcesViewModelTest {
 
         // THEN
         assertThat(subscriber.values())
-                .containsExactly(SourceAction.Sync)
+                .contains(SourceAction.Sync)
     }
 
     @Test
@@ -157,6 +173,6 @@ class SourcesViewModelTest {
 
         // THEN
         assertThat(subscriber.values())
-                .containsExactly(SourceAction.Select(Db.SourceSelection("source1", true)))
+                .contains(SourceAction.Select(Db.SourceSelection("source1", true)))
     }
 }

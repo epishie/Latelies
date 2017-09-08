@@ -10,18 +10,20 @@ import com.jakewharton.rxrelay2.PublishRelay
 import com.squareup.picasso.Picasso
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
+import io.reactivex.functions.Consumer
 import kotlinx.android.synthetic.main.source_item.view.*
-import kotlin.properties.Delegates
 
 class SourcesAdapter : RecyclerView.Adapter<SourcesAdapter.ViewHolder>() {
-    var sources: List<Source> by Delegates.observable(emptyList()) { _, _, _ ->
+    val sources = Consumer<List<SourcesViewModel.Source>> { sources ->
+        list = sources
         notifyDataSetChanged()
     }
+    private var list: List<SourcesViewModel.Source> = emptyList()
     private var _selections = PublishRelay.create<SourcesViewModel.Source>()
     val selections: Flowable<Source> = _selections.toFlowable(BackpressureStrategy.BUFFER)
 
     override fun getItemCount(): Int {
-        return sources.size
+        return list.size
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -30,7 +32,7 @@ class SourcesAdapter : RecyclerView.Adapter<SourcesAdapter.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val source = sources[position]
+        val source = list[position]
         holder.bind(source) {
             _selections.accept(source.copy(selected = !source.selected))
         }

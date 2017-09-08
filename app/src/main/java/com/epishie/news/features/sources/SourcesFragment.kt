@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import com.epishie.news.R
 import com.epishie.news.component
 import com.epishie.news.features.common.inflate
+import com.jakewharton.rxbinding2.view.visibility
 import io.reactivex.Flowable
 import io.reactivex.Scheduler
 import io.reactivex.disposables.Disposable
@@ -19,11 +20,11 @@ import javax.inject.Inject
 import javax.inject.Named
 
 class SourcesFragment : BottomSheetDialogFragment() {
-    lateinit var vm: SourcesViewModel
-    lateinit var disposable: Disposable
-    lateinit var adapter: SourcesAdapter
     @field:[Inject Named("ui")]
     lateinit var ui: Scheduler
+    private lateinit var vm: SourcesViewModel
+    private lateinit var adapter: SourcesAdapter
+    private lateinit var disposable: Disposable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,12 +55,15 @@ class SourcesFragment : BottomSheetDialogFragment() {
                 selections
         )
 
-        disposable = vm.update(events)
+        val states = vm.update(events)
                 .observeOn(ui)
-                .subscribe { (progress, _, sources) ->
-                    this.progress.visibility = if (progress) View.VISIBLE else View.GONE
-                    adapter.sources = sources ?: emptyList()
-                }
+                .publish()
+        states.map { (progress) -> progress }
+                .subscribe(progress.visibility())
+        states.map { state -> state.sources }
+                .subscribe(adapter.sources)
+
+        disposable = states.connect()
     }
 
     override fun onStop() {

@@ -24,7 +24,7 @@ class SourcesViewModel
                     shared.ofType(Event.Select::class.java).map { (source) ->
                         SourceAction.Select(Db.SourceSelection(source.id, source.selected))
                     }
-            )
+            ).startWith(SourceAction.Get)
         }
         return sourceModel.observe(actions)
                 .scan(lastState, this::reduce)
@@ -46,7 +46,7 @@ class SourcesViewModel
     }
 
     data class State(val progress: Boolean = false, val error: Throwable? = null,
-                     val sources: List<Source>? = null)
+                     val sources: List<Source> = emptyList())
     data class Source(val id: String, val name: String, val logo: String, val selected: Boolean)
     sealed class Event {
         object Refresh : Event()

@@ -50,11 +50,11 @@ class SourceModelTest {
     }
 
     @Test
-    fun `observe() should emit Update result from DB`() {
+    fun `observe(Get) should emit Update result from DB`() {
         // GIVEN
         val subscriber = TestSubscriber<SourceResult>()
         val source = Db.Source("source1", "Source 1", "http://source1.com", false)
-        val results = model.observe(Flowable.empty())
+        val results = model.observe(Flowable.just(SourceAction.Get))
 
         // WHEN
         results.subscribe(subscriber)

@@ -5,6 +5,7 @@ import com.epishie.news.App
 import com.epishie.news.Debuggers
 import com.epishie.news.model.db.NewsDb
 import com.epishie.news.model.network.NewsApi
+import com.epishie.news.model.network.PostLightApi
 import com.f2prateek.rx.preferences2.RxSharedPreferences
 import dagger.Module
 import dagger.Provides
@@ -51,11 +52,23 @@ class AppModule {
     fun provideNewsApi(client: OkHttpClient): NewsApi {
         return Retrofit.Builder()
                 .client(client)
-                .baseUrl("http://newsapi.org")
+                .baseUrl("https://newsapi.org")
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
                 .create(NewsApi::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun providePostLighApi(client: OkHttpClient): PostLightApi {
+        return Retrofit.Builder()
+                .client(client)
+                .baseUrl("https://mercury.postlight.com")
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .build()
+                .create(PostLightApi::class.java)
     }
 
     @Singleton

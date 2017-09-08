@@ -21,64 +21,55 @@ class SourceModel
     }
     private val sourceDao = newsDb.sourceDao()
     private val syncDao = newsDb.syncDao()
-    private val dbUpdates: Flowable<SourceResult>
-        get() {
-            return sourceDao.loadAllSources()
-                    .map { sources -> SourceResult.Update(sources) as SourceResult }
-                    .subscribeOn(worker)
-        }
 
     fun observe(actions: Flowable<SourceAction>): Flowable<SourceResult> {
-        return Flowable.merge(dbUpdates, createResultsFromActions(actions))
-    }
-
-    private fun createResultsFromActions(actions: Flowable<SourceAction>): Flowable<SourceResult> {
         return actions.publish { shared ->
             Flowable.merge(
-                    shared.ofType(SourceAction.Sync::class.java).compose(this::refreshAction),
-                    shared.ofType(SourceAction.Select::class.java).compose(this::selectAction)
+                    shared.ofType(SourceAction.Get::class.java).compose(this::handleGetActions),
+                    shared.ofType(SourceAction.Sync::class.java).compose(this::handleRefreshActions),
+                    shared.ofType(SourceAction.Select::class.java).compose(this::handleSelectActions)
             )
         }
     }
 
-    private fun refreshAction(actions: Flowable<SourceAction.Sync>): Flowable<SourceResult> {
+    private fun handleGetActions(actions: Flowable<SourceAction.Get>): Flowable<SourceResult> {
+        return actions.flatMap {
+            sourceDao.loadAllSources()
+        }.map { sources ->
+            SourceResult.Update(sources)
+        }
+    }
+
+    private fun handleRefreshActions(actions: Flowable<SourceAction.Sync>): Flowable<SourceResult> {
         return actions
                 .flatMap {
-                    Flowable.fromPublisher<Db.Sync> { subscriber ->
-                        syncDao.loadSync(SYNC_RESOURCE)
-                                .toFlowable()
-                                .onErrorResumeNext(Flowable.just(Db.Sync(SYNC_RESOURCE, 0)))
-                                .subscribe(subscriber)
-                    }.subscribeOn(worker)
+                    syncDao.loadSync(SYNC_RESOURCE)
+                            .toFlowable()
+                            .onErrorResumeNext(Flowable.just(Db.Sync(SYNC_RESOURCE, 0)))
                 }
                 .filter { sync ->
                     val difference = Date().time - sync.timestamp
                     return@filter difference >= SYNC_TIME
                 }
                 .flatMap {
-                    val sync = newsApi.getSources()
-                            .subscribeOn(worker)
-                            .publish()
-                            .autoConnect(2)
+                    newsApi.getSources().subscribeOn(worker).publish { shared ->
+                        shared.onErrorResumeNext { _: Throwable ->
+                            Flowable.empty()
+                        }.subscribe(this::saveToDb)
 
-                    // DB sync
-                    sync.onErrorResumeNext { _: Throwable ->
-                        Flowable.empty()
-                    }.subscribe(this::saveToDb)
-
-                    return@flatMap sync.map { (_, sources) ->
-                        if (sources != null) {
-                            SourceResult.Synced
-                        } else {
-                            SourceResult.Error(NewsApiError())
-                        }
-                    }.onErrorResumeNext { error: Throwable ->
-                        Flowable.just(SourceResult.Error(error))
-                    }.startWith(SourceResult.Syncing)
+                        shared.map { (_, sources) ->
+                            if (sources != null) {
+                                SourceResult.Synced
+                            } else {
+                                SourceResult.Error(NewsApiError())
+                            }
+                        }.onErrorResumeNext { error: Throwable ->
+                            Flowable.just(SourceResult.Error(error))
+                        }.startWith(SourceResult.Syncing)                    }
                 }
     }
 
-    private fun selectAction(actions: Flowable<SourceAction.Select>): Flowable<SourceResult> {
+    private fun handleSelectActions(actions: Flowable<SourceAction.Select>): Flowable<SourceResult> {
         return actions.flatMap { (selection) ->
             Flowable.create<SourceResult>({ emitter ->
                 sourceDao.updateSourceSelection(selection)
@@ -104,6 +95,7 @@ class SourceModel
 }
 
 sealed class SourceAction {
+    object Get : SourceAction()
     object Sync : SourceAction()
     data class Select(val selection: Db.SourceSelection) : SourceAction()
 }

@@ -3,21 +3,22 @@ package com.epishie.news.features.splash
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.view.View
 import com.epishie.news.R
 import com.epishie.news.component
+import com.epishie.news.features.common.BaseActivity
 import com.epishie.news.features.stories.StoriesActivity
 import com.jakewharton.rxbinding2.view.clicks
+import com.jakewharton.rxbinding2.view.visibility
+import com.jakewharton.rxbinding2.widget.text
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Scheduler
 import kotlinx.android.synthetic.main.splash_activity.*
 import java.io.IOException
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Named
 
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : BaseActivity() {
     @field:[Inject Named("ui")]
     lateinit var ui: Scheduler
     private lateinit var vm: SplashViewModel
@@ -35,31 +36,31 @@ class SplashActivity : AppCompatActivity() {
         val events = retry.clicks()
                 .map { SplashViewModel.Event.RetryEvent as SplashViewModel.Event }
                 .toFlowable(BackpressureStrategy.BUFFER)
-        vm.update(events)
+        val states = vm.update(events)
                 .observeOn(ui)
-                .subscribe(this::renderState)
-    }
+                .publish()
+        states.filter { state -> state.success }
+                .distinctUntilChanged()
+                .subscribe {
+                    startActivity(Intent(this, StoriesActivity::class.java))
+                    finish()
+                }
+        states.map { (progress) -> progress }
+                .subscribe(progress.visibility(View.GONE))
+        states.filter { state -> state.error != null }
+                .map { state ->
+                    when (state.error) {
+                        is IOException -> getString(R.string.error_no_internet)
+                        else -> getString(R.string.error_unknown)
+                    }
+                }.subscribe(errorDescription.text())
+        val error = states.map { state -> state.error != null }
+                .publish()
+        error.subscribe(errorTitle.visibility(View.GONE))
+        error.subscribe(errorDescription.visibility(View.GONE))
+        error.subscribe(retry.visibility(View.GONE))
+        error.connect()
 
-    private fun renderState(state: SplashViewModel.State) {
-        if (state.success) {
-            startActivity(Intent(this, StoriesActivity::class.java))
-            finish()
-            return
-        }
-
-        progress.visibility = if (state.progress) View.VISIBLE else View.INVISIBLE
-        if (state.error != null) {
-            errorTitle.visibility = View.VISIBLE
-            errorDescription.visibility = View.VISIBLE
-            retry.visibility = View.VISIBLE
-            errorDescription.text = when (state.error) {
-                is IOException -> getString(R.string.error_no_internet)
-                else -> getString(R.string.error_unknown)
-            }
-        } else {
-            errorTitle.visibility = View.INVISIBLE
-            errorDescription.visibility = View.INVISIBLE
-            retry.visibility = View.INVISIBLE
-        }
+        disposables.add(states.connect())
     }
 }
