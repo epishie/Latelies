@@ -1,9 +1,6 @@
 package com.epishie.news.model.db
 
-import android.arch.persistence.room.Dao
-import android.arch.persistence.room.Insert
-import android.arch.persistence.room.OnConflictStrategy
-import android.arch.persistence.room.Query
+import android.arch.persistence.room.*
 import io.reactivex.Flowable
 import io.reactivex.Single
 
@@ -20,9 +17,10 @@ abstract class StoryDao {
                 "   s.name AS source_name, " +
                 "   s.url AS source_url, " +
                 "   s.selected AS source_selected, " +
-                "   r.read AS read " +
+                "   e.read AS read, " +
+                "   e.content AS content " +
                 "FROM story_bases AS b " +
-                "INNER JOIN story_extras AS r ON b.url = r.url " +
+                "INNER JOIN story_extras AS e ON b.url = e.url " +
                 "INNER JOIN (${SourceDao.SOURCE_SELECTED_QUERY}) AS s ON b.source = s.id"
         const val STORY_BY_URL_QUERY = "$STORY_QUERY " +
                 "WHERE b.url = :url"
@@ -36,4 +34,10 @@ abstract class StoryDao {
     abstract fun saveStoryBases(stories: List<Db.StoryBase>)
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract fun saveStoryExtras(stories: List<Db.StoryExtra>)
+    @Query("SELECT * " +
+            "FROM story_extras e " +
+            "WHERE e.url = :url")
+    abstract fun loadStoryExtra(url: String): Single<Db.StoryExtra>
+    @Update
+    abstract fun updateStoryExtra(extra: Db.StoryExtra)
 }

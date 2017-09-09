@@ -34,6 +34,7 @@ class SplashActivity : BaseActivity() {
 
     private fun setupView() {
         val events = retry.clicks()
+                .subscribeOn(ui)
                 .map { SplashViewModel.Event.RetryEvent as SplashViewModel.Event }
                 .toFlowable(BackpressureStrategy.BUFFER)
         val states = vm.update(events)

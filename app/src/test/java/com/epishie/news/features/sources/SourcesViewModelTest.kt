@@ -65,8 +65,7 @@ class SourcesViewModelTest {
     @Test
     fun `update() should emit a state with sources`() {
         // GIVEN
-        val inputSource = Db.Source("source1", "Source 1", "http://source1.com",
-                false)
+        val inputSource = Db.Source("source1", "Source 1", "http://source1.com", false)
         whenever(model.observe(any()))
                 .thenReturn(Flowable.just(SourceResult.Update(listOf(inputSource))))
         val subscriber = TestSubscriber<SourcesViewModel.State>()

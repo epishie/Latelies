@@ -153,10 +153,10 @@ class SourceModelTest {
 
         // WHEN
         results.subscribe(subscriber)
-        actions.onNext(SourceAction.Sync)
         worker.advanceTimeBy(1, TimeUnit.MILLISECONDS)
         actions.onNext(SourceAction.Sync)
         worker.advanceTimeBy(1, TimeUnit.MILLISECONDS)
+        actions.onNext(SourceAction.Sync)
 
         // THEN
         verify(newsApi, times(2)).getSources()

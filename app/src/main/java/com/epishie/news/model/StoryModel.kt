@@ -7,6 +7,7 @@ import com.epishie.news.model.network.NewsApi
 import com.epishie.news.model.network.PostLightApi
 import io.reactivex.Flowable
 import io.reactivex.Scheduler
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -24,7 +25,7 @@ class StoryModel
                     shared.ofType(StoryAction.Get::class.java).flatMap(this::handleGetAction),
                     shared.ofType(StoryAction.Sync::class.java).flatMap(this::handleSyncAction)
             )
-        }
+        }.subscribeOn(worker)
     }
 
     private fun handleGetAction(get: StoryAction.Get): Flowable<StoryResult> {
@@ -38,7 +39,8 @@ class StoryModel
 
     private fun handleSyncAction(sync: StoryAction.Sync): Flowable<StoryResult> {
         return if (sync.url != null) {
-            Flowable.empty()
+            parseStory(sync.url)
+                    .startWith(StoryResult.Syncing(sync.url))
         } else {
             sourceDao.loadSelectedSources().flatMap { sources ->
                 if (sources.isEmpty()) {
@@ -54,40 +56,81 @@ class StoryModel
         return Flowable.fromIterable(sources)
                 .concatMap { (id) ->
                     newsApi.getArticles(id, BuildConfig.NEWS_API_KEY)
-                            .subscribeOn(worker)
-                            .publish { shared ->
-                                shared.onErrorResumeNext { _: Throwable ->
-                                    Flowable.empty()
-                                }.subscribe { result ->
-                                    saveToDb(id, result)
-                                }
-
-                                shared.map { result ->
-                                    if (result.articles != null) {
-                                        StoryResult.Synced()
-                                    } else {
-                                        StoryResult.Error(NewsApiError())
-                                    }
-                                }
-                            }.onErrorResumeNext { error: Throwable ->
+                            .map { result ->
+                                if (result.articles != null) {
+                                    FetchStoriesResult.Success(result.articles.map {
+                                        (url, title, description, author, urlToImage, publishedAt) ->
+                                        Db.StoryBase(url, title, description,
+                                                id, author, urlToImage,
+                                                publishedAt?.time)
+                                    })
+                                } else {
+                                    throw NewsApiError()
+                                } as FetchStoriesResult
+                            }
+                            .onErrorResumeNext { throwable: Throwable ->
+                                Flowable.just(FetchStoriesResult.Error(throwable))
+                            }
+                }
+                .collect({ FetchStoriesSummary() }, { summary, result ->
+                    when (result) {
+                        is FetchStoriesResult.Error -> {
+                            if (summary.error !is IOException) {
+                                summary.error = result.error
+                            }
+                        }
+                        is FetchStoriesResult.Success -> {
+                            summary.stories.addAll(result.stories)
+                        }
+                    }
+                })
+                .flatMapPublisher { (error, stories) ->
+                    saveToDb(stories)
+                    if (error != null) {
                         Flowable.just(StoryResult.Error(error))
+                    } else {
+                        Flowable.just(StoryResult.Synced())
                     }
                 }
     }
 
-    private fun saveToDb(source: String, articleResult: NewsApi.ArticleResult) {
-        if (articleResult.articles == null) {
-            return
-        }
-        storyDao.saveStoryBases(articleResult.articles.map { (url, title, description, author,
-                                                                     urlToImage, publishedAt) ->
-            Db.StoryBase(url, title, description, source, author,
-                    urlToImage, publishedAt?.time)
-        })
-        storyDao.saveStoryExtras(articleResult.articles.map { (url) ->
+    private fun parseStory(url: String): Flowable<StoryResult> {
+        return storyDao.loadStoryExtra(url)
+                .toFlowable()
+                .flatMap { extra ->
+                    postLightApi.parseArticle(extra.url, BuildConfig.POST_LIGHT_API_KEY)
+                            .publish { shared ->
+                                shared.onErrorResumeNext { _: Throwable ->
+                                    Flowable.empty()
+                                }.subscribe { result ->
+                                    storyDao.updateStoryExtra(extra.copy(content = result.content))
+                                }
+
+                                shared.map {
+                                    StoryResult.Synced(url) as StoryResult
+                                }.onErrorResumeNext { error: Throwable ->
+                                    Flowable.just(StoryResult.Error(error))
+                                }
+                            }
+                }
+                .onErrorResumeNext { _: Throwable ->
+                    Flowable.empty()
+                }
+    }
+
+    private fun saveToDb(stories: List<Db.StoryBase>) {
+        storyDao.saveStoryBases(stories)
+        storyDao.saveStoryExtras(stories.map { (url) ->
             Db.StoryExtra(url)
         })
     }
+
+    sealed class FetchStoriesResult {
+        data class Success(val stories: List<Db.StoryBase>) : FetchStoriesResult()
+        data class Error(val error: Throwable) : FetchStoriesResult()
+    }
+    data class FetchStoriesSummary(var error: Throwable? = null,
+                                   val stories: MutableList<Db.StoryBase> = mutableListOf())
 }
 
 sealed class StoryAction {

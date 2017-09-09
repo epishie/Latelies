@@ -25,34 +25,32 @@ class SourceModel
     fun observe(actions: Flowable<SourceAction>): Flowable<SourceResult> {
         return actions.publish { shared ->
             Flowable.merge(
-                    shared.ofType(SourceAction.Get::class.java).compose(this::handleGetActions),
-                    shared.ofType(SourceAction.Sync::class.java).compose(this::handleRefreshActions),
-                    shared.ofType(SourceAction.Select::class.java).compose(this::handleSelectActions)
+                    shared.ofType(SourceAction.Get::class.java).flatMap(this::handleGetActions),
+                    shared.ofType(SourceAction.Sync::class.java).flatMap(this::handleRefreshActions),
+                    shared.ofType(SourceAction.Select::class.java).flatMap(this::handleSelectActions)
             )
-        }
+        }.subscribeOn(worker)
     }
 
-    private fun handleGetActions(actions: Flowable<SourceAction.Get>): Flowable<SourceResult> {
-        return actions.flatMap {
-            sourceDao.loadAllSources()
-        }.map { sources ->
-            SourceResult.Update(sources)
-        }
-    }
-
-    private fun handleRefreshActions(actions: Flowable<SourceAction.Sync>): Flowable<SourceResult> {
-        return actions
-                .flatMap {
-                    syncDao.loadSync(SYNC_RESOURCE)
-                            .toFlowable()
-                            .onErrorResumeNext(Flowable.just(Db.Sync(SYNC_RESOURCE, 0)))
+    @Suppress("UNUSED_PARAMETER")
+    private fun handleGetActions(action: SourceAction.Get): Flowable<SourceResult> {
+        return sourceDao.loadAllSources()
+                .map { sources ->
+                    SourceResult.Update(sources)
                 }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    private fun handleRefreshActions(action: SourceAction.Sync): Flowable<SourceResult> {
+        return syncDao.loadSync(SYNC_RESOURCE)
+                .toFlowable()
+                .onErrorResumeNext(Flowable.just(Db.Sync(SYNC_RESOURCE, 0)))
                 .filter { sync ->
                     val difference = Date().time - sync.timestamp
                     return@filter difference >= SYNC_TIME
                 }
                 .flatMap {
-                    newsApi.getSources().subscribeOn(worker).publish { shared ->
+                    newsApi.getSources().publish { shared ->
                         shared.onErrorResumeNext { _: Throwable ->
                             Flowable.empty()
                         }.subscribe(this::saveToDb)
@@ -69,14 +67,11 @@ class SourceModel
                 }
     }
 
-    private fun handleSelectActions(actions: Flowable<SourceAction.Select>): Flowable<SourceResult> {
-        return actions.flatMap { (selection) ->
-            Flowable.create<SourceResult>({ emitter ->
-                sourceDao.updateSourceSelection(selection)
-                emitter.onComplete()
-            }, BackpressureStrategy.BUFFER)
-                    .subscribeOn(worker)
-        }
+    private fun handleSelectActions(action: SourceAction.Select): Flowable<SourceResult> {
+        return Flowable.create<SourceResult>({ emitter ->
+            sourceDao.updateSourceSelection(action.selection)
+            emitter.onComplete()
+        }, BackpressureStrategy.BUFFER).subscribeOn(worker)
     }
 
     private fun saveToDb(result: NewsApi.SourceResult) {

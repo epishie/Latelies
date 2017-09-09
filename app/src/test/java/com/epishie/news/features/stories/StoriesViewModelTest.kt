@@ -68,8 +68,7 @@ class StoriesViewModelTest {
     @Test
     fun `update() should emit a state with sources`() {
         // GIVEN
-        val source = Db.Source("source1", "Source 1", "http://source1.com",
-                false)
+        val source = Db.Source("source1", "Source 1", "http://source1.com", false)
         val inputStory = Db.Story("http://story1.com", "Story 1", "Story One",
                 "Author 1", "http://image1.com", Date().time, source, false,
                 null)
@@ -84,7 +83,7 @@ class StoriesViewModelTest {
         // THEN
         val story = StoriesViewModel.Story(inputStory.url, inputStory.title, source.name,
                 source.url.toLogoUrl(), inputStory.author, inputStory.description, inputStory.thumbnail)
-        assertThat(subscriber.values())
+        assertThat(subscriber.values().toList())
                 .contains(StoriesViewModel.State(stories = listOf(story)))
     }
 

@@ -11,7 +11,9 @@ import com.epishie.news.features.sources.SourcesFragment
 import com.jakewharton.rxbinding2.support.v4.widget.refreshes
 import com.jakewharton.rxbinding2.support.v4.widget.refreshing
 import com.jakewharton.rxbinding2.view.RxView
+import com.jakewharton.rxbinding2.view.clicks
 import io.reactivex.BackpressureStrategy
+import io.reactivex.Flowable
 import io.reactivex.Scheduler
 import kotlinx.android.synthetic.main.stories_activity.*
 import java.io.IOException
@@ -42,12 +44,14 @@ class StoriesActivity : BaseActivity() {
                 false)
         storyList.adapter = storiesAdapter
 
-        RxView.clicks(filterButton)
+        filterButton.clicks()
+                .subscribeOn(ui)
                 .subscribe {
                     SourcesFragment().show(supportFragmentManager, null)
                 }
         val events = refresher.refreshes()
                 .toFlowable(BackpressureStrategy.BUFFER)
+                .subscribeOn(ui)
                 .map {
                     StoriesViewModel.Event.Refresh as StoriesViewModel.Event
                 }
