@@ -4,5 +4,7 @@
     <color name="primaryDark">#BABDBE</color>
     <color name="secondary">#00838F</color>
     <color name="textDark">#424242</color>
+    <color name="disabled">#EEEEEE</color>
+    <color name="contentGrey">#757575</color>
     <color name="contentInverse">#FFFFFF</color>
 </resources>

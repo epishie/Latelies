@@ -13,6 +13,8 @@
     <string name="action_retry">Retry</string>
 
     <string name="error_sources">Can\'t load news sources</string>
+    <string name="error_stories">No Stories</string>
+    <string name="error_stories_details">Select news sources using the filter button</string>
 
     <!-- General Errors -->
     <string name="error_oops">Oops!</string>

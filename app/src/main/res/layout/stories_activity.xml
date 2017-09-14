@@ -2,9 +2,11 @@
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:ignore="ContentDescription">
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -23,6 +25,52 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </android.support.v4.widget.SwipeRefreshLayout>
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/emptyState"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/disabled"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:visibility="gone">
+        <android.support.constraint.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.5"/>
+        <ImageView
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/guideline"
+            app:srcCompat="@drawable/ic_empty_icon" />
+        <TextView
+            android:id="@+id/emptyTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/guideline"
+            android:gravity="center_horizontal"
+            android:textColor="?android:textColorSecondary"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:text="@string/error_stories" />
+        <TextView
+            android:id="@+id/emptyDescription"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/emptyTitle"
+            android:layout_marginStart="@dimen/key_line_1"
+            android:layout_marginEnd="@dimen/key_line_1"
+            android:layout_marginTop="@dimen/gap_2"
+            android:gravity="center_horizontal"
+            android:textColor="?android:textColorSecondary"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+            android:text="@string/error_stories_details" />
+    </android.support.constraint.ConstraintLayout>
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/filterButton"
         android:layout_width="wrap_content"

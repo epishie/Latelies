@@ -6,6 +6,7 @@ import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
+import android.view.View
 import com.epishie.news.R
 import com.epishie.news.component
 import com.epishie.news.features.common.BaseActivity
@@ -14,7 +15,9 @@ import com.epishie.news.features.story.StoryActivity
 import com.jakewharton.rxbinding2.support.v4.widget.refreshes
 import com.jakewharton.rxbinding2.support.v4.widget.refreshing
 import com.jakewharton.rxbinding2.view.clicks
+import com.jakewharton.rxbinding2.view.visibility
 import io.reactivex.BackpressureStrategy
+import io.reactivex.Observable
 import io.reactivex.Scheduler
 import io.reactivex.functions.Consumer
 import kotlinx.android.synthetic.main.stories_activity.*
@@ -71,6 +74,8 @@ class StoriesActivity : BaseActivity() {
                 .subscribe(refresher.refreshing())
         states.map { state -> state.stories }
                 .subscribe(storiesAdapter.stories)
+        states.map { (progress, error, stories) -> stories.isEmpty() && !progress && error == null }
+                .subscribe(emptyState.visibility(View.GONE))
         states.subscribe { state ->
             if (state.error != null) {
                 val error = when (state.error) {
