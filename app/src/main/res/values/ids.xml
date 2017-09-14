@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="default_images">
+        <item>@drawable/default_image_1</item>
+        <item>@drawable/default_image_2</item>
+        <item>@drawable/default_image_3</item>
+        <item>@drawable/default_image_4</item>
+        <item>@drawable/default_image_5</item>
+    </array>
+</resources>

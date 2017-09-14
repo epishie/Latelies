@@ -15,7 +15,7 @@
         android:layout_marginEnd="@dimen/gap_1"
         android:gravity="center_vertical"
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        android:text="@string/title_sources" />
+        android:text="@string/lbl_sources" />
     <ProgressBar
         android:id="@+id/progress"
         android:layout_width="@dimen/icon_size"

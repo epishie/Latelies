@@ -33,5 +33,5 @@
         app:layout_anchorGravity="bottom|end"
         app:fabSize="normal"
         app:srcCompat="@drawable/ic_filter_list_black_24dp"
-        android:tint="?android:attr/textColorPrimaryInverse" />
+        android:tint="@color/contentInverse" />
 </android.support.design.widget.CoordinatorLayout>

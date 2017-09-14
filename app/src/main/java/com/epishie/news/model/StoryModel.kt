@@ -10,12 +10,14 @@ import io.reactivex.Scheduler
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Named
+import javax.inject.Singleton
 
+@Singleton
 class StoryModel
 @Inject constructor(newsDb: NewsDb,
-                    private val newsApi: NewsApi,
-                    private val postLightApi: PostLightApi,
-                    @Named("worker") private val worker: Scheduler) {
+                               private val newsApi: NewsApi,
+                               private val postLightApi: PostLightApi,
+                               @Named("worker") private val worker: Scheduler) {
     private val sourceDao = newsDb.sourceDao()
     private val storyDao = newsDb.storyDao()
 
@@ -84,12 +86,16 @@ class StoryModel
                         }
                     }
                 })
-                .flatMapPublisher { (error, stories) ->
-                    saveToDb(stories)
-                    if (error != null) {
-                        Flowable.just(StoryResult.Error(error))
-                    } else {
-                        Flowable.just(StoryResult.Synced())
+                .toFlowable()
+                .publish { shared ->
+                    shared.map{ summary -> summary.stories}
+                            .subscribe(this::saveToDb)
+                    shared.map { (error, _) ->
+                        if (error != null) {
+                            StoryResult.Error(error)
+                        } else {
+                            StoryResult.Synced()
+                        }
                     }
                 }
     }
@@ -102,8 +108,9 @@ class StoryModel
                             .publish { shared ->
                                 shared.onErrorResumeNext { _: Throwable ->
                                     Flowable.empty()
-                                }.subscribe { result ->
-                                    storyDao.updateStoryExtra(extra.copy(content = result.content))
+                                }.subscribe { (_, content, word_count) ->
+                                    storyDao.updateStoryExtra(extra.copy(content = content,
+                                            wordCount = word_count))
                                 }
 
                                 shared.map {
@@ -112,9 +119,6 @@ class StoryModel
                                     Flowable.just(StoryResult.Error(error))
                                 }
                             }
-                }
-                .onErrorResumeNext { _: Throwable ->
-                    Flowable.empty()
                 }
     }
 
@@ -141,7 +145,7 @@ sealed class StoryAction {
 sealed class StoryResult {
     data class Syncing(val url: String? = null) : StoryResult()
     data class Synced(val url: String? = null) : StoryResult()
-    data class Update(val sources: Flowable<List<Db.Story>>) : StoryResult()
+    data class Update(val stories: Flowable<List<Db.Story>>) : StoryResult()
     data class Error(val throwable: Throwable) : StoryResult() {
         override fun equals(other: Any?): Boolean {
             return when (other) {

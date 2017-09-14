@@ -33,7 +33,7 @@ class StoryModelTest {
             true)
     private val testStory = Db.Story("http://story1.com", "Story 1", "Story One",
             "Author 1", "http://thumbnail1.com", Date().time, testSource,
-            false, null)
+            false, null, 200)
 
     @Before
     fun setUp() {
@@ -70,7 +70,7 @@ class StoryModelTest {
                 .hasSize(1)
                 .hasOnlyElementsOfType(StoryResult.Update::class.java)
         val updates = TestSubscriber<List<Db.Story>>()
-        (subscriber.values()[0] as StoryResult.Update).sources.subscribe(updates)
+        (subscriber.values()[0] as StoryResult.Update).stories.subscribe(updates)
         worker.advanceTimeBy(1, TimeUnit.MILLISECONDS)
         assertThat(updates.values().toList())
                 .containsExactly(listOf(testStory))
@@ -91,7 +91,7 @@ class StoryModelTest {
                 .hasSize(1)
                 .hasOnlyElementsOfType(StoryResult.Update::class.java)
         val updates = TestSubscriber<List<Db.Story>>()
-        (subscriber.values()[0] as StoryResult.Update).sources.subscribe(updates)
+        (subscriber.values()[0] as StoryResult.Update).stories.subscribe(updates)
         worker.advanceTimeBy(1, TimeUnit.MILLISECONDS)
         assertThat(updates.values().toList())
                 .containsExactly(listOf(testStory))
@@ -128,7 +128,8 @@ class StoryModelTest {
     @Test
     fun `observer(Sync(url)) should emit Syncing, Synced results, fetch all stories from PostLightApi and save to DB`() {
         // GIVEN
-        val articleResult = PostLightApi.Result("http://story1.com", "<div>Content 1</div>")
+        val articleResult = PostLightApi.Result("http://story1.com",
+                "<div>Content 1</div>", 200)
         whenever(postLightApi.parseArticle(eq("http://story1.com"), any()))
                 .thenReturn(Flowable.just(articleResult))
         val subscriber = TestSubscriber<StoryResult>()
@@ -145,7 +146,7 @@ class StoryModelTest {
         verify(postLightApi).parseArticle(eq("http://story1.com"), any())
         verify(storyDao).updateStoryExtra(check { extra ->
             assertThat(extra).isEqualTo(Db.StoryExtra(articleResult.url, false,
-                    articleResult.content))
+                    articleResult.content, 200))
         })
     }
 

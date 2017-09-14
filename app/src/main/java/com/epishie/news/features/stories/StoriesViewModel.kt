@@ -22,7 +22,7 @@ class StoriesViewModel
         return storyModel.observe(actions)
                 .flatMap { result ->
                     if (result is StoryResult.Update) {
-                        result.sources.map { stories ->
+                        result.stories.map { stories ->
                             Result.Stories(stories)
                         }
                     } else {

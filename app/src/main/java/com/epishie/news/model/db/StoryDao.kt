@@ -18,7 +18,8 @@ abstract class StoryDao {
                 "   s.url AS source_url, " +
                 "   s.selected AS source_selected, " +
                 "   e.read AS read, " +
-                "   e.content AS content " +
+                "   e.content AS content," +
+                "   e.word_count AS word_count " +
                 "FROM story_bases AS b " +
                 "INNER JOIN story_extras AS e ON b.url = e.url " +
                 "INNER JOIN (${SourceDao.SOURCE_SELECTED_QUERY}) AS s ON b.source = s.id"

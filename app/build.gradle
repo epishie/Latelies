@@ -10,7 +10,7 @@ keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.0"
+    buildToolsVersion "26.0.1"
     defaultConfig {
         applicationId "com.epishie.news"
         minSdkVersion 19
@@ -46,6 +46,7 @@ dependencies {
     implementation "com.android.support:appcompat-v7:$supportLibVersion",
             "com.android.support:design:$supportLibVersion",
             "com.android.support:percent:$supportLibVersion",
+            "com.android.support:customtabs:$supportLibVersion",
             "com.android.support.constraint:constraint-layout:1.0.2",
             "android.arch.lifecycle:runtime:$archLibVersion",
             "android.arch.lifecycle:extensions:$archLibVersion",

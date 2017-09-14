@@ -1,5 +1,6 @@
 package com.epishie.news.model.db
 
+import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Embedded
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
@@ -30,7 +31,8 @@ object Db {
             val date: Long?,
             @Embedded(prefix = "source_") val source: Source,
             val read: Boolean,
-            val content: String?)
+            val content: String?,
+            @ColumnInfo(name = "word_count") val wordCount: Int?)
     @Entity(tableName = "story_bases")
     data class StoryBase(
             @PrimaryKey val url: String,
@@ -44,5 +46,6 @@ object Db {
     data class StoryExtra(
             @PrimaryKey val url: String,
             val read: Boolean = false,
-            val content: String? = null)
+            val content: String? = null,
+            @ColumnInfo(name = "word_count") val wordCount: Int? = null)
 }

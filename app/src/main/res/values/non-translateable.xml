@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="html" translatable="false">
+        <![CDATA[
+        <html>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style type="text/css">
+                    @font-face {
+                        font-family: OpenSans;
+                        src: url("file:///android_asset/fonts/opensans.ttf")
+                    }
+                    a {
+                        color: #00838F;
+                        text-decoration: none;
+                    }
+                    body {
+                        font-family: OpenSans;
+                        font-size: 12pt;
+                        color: #444444;
+                        margin: 16px;
+                    }
+                    iframe {
+                        width: 90vw;
+                        height: 50.625vw;
+                    } /* 16:9 */
+                    img, video {
+                        display: inline;
+                        height: auto;
+                        max-width: 100%%;
+                    }
+                </style>
+            </head>
+            <body>%1$s</body>
+        </html>
+        ]]>
+    </string>
+</resources>

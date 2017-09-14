@@ -4,4 +4,5 @@
     <color name="primaryDark">#BABDBE</color>
     <color name="secondary">#00838F</color>
     <color name="textDark">#424242</color>
+    <color name="contentInverse">#FFFFFF</color>
 </resources>

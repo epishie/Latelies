@@ -3,18 +3,20 @@ package com.epishie.news.features.stories
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v4.content.ContextCompat
+import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import com.epishie.news.R
 import com.epishie.news.component
 import com.epishie.news.features.common.BaseActivity
 import com.epishie.news.features.sources.SourcesFragment
+import com.epishie.news.features.story.StoryActivity
 import com.jakewharton.rxbinding2.support.v4.widget.refreshes
 import com.jakewharton.rxbinding2.support.v4.widget.refreshing
-import com.jakewharton.rxbinding2.view.RxView
 import com.jakewharton.rxbinding2.view.clicks
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
 import io.reactivex.Scheduler
+import io.reactivex.functions.Consumer
 import kotlinx.android.synthetic.main.stories_activity.*
 import java.io.IOException
 import javax.inject.Inject
@@ -37,12 +39,18 @@ class StoriesActivity : BaseActivity() {
 
     private fun setupView() {
         setSupportActionBar(toolbar)
-        supportActionBar?.setTitle(R.string.title_headlines)
+        supportActionBar?.setTitle(R.string.lbl_headlines)
 
-        storiesAdapter = StoriesAdapter()
+        storiesAdapter = StoriesAdapter(this, Consumer { (url) ->
+            val intent = StoryActivity.storyIntent(this, url)
+            startActivity(intent)
+        })
         storyList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL,
                 false)
         storyList.adapter = storiesAdapter
+        val divider = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
+        divider.setDrawable(ContextCompat.getDrawable(this, R.drawable.story_space))
+        storyList.addItemDecoration(divider)
 
         filterButton.clicks()
                 .subscribeOn(ui)
