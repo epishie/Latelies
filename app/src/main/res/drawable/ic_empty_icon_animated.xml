@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:drawable="@drawable/ic_empty_icon_extra"
+    tools:ignore="NewApi">
+    <target
+        android:animation="@animator/steam_hover_1"
+        android:name="steam 1" />
+    <target
+        android:animation="@animator/steam_hover_2"
+        android:name="steam 2" />
+</animated-vector>

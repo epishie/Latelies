@@ -5,6 +5,7 @@ import android.app.Application
 import android.arch.persistence.room.Room
 import android.content.Context
 import android.support.v4.app.Fragment
+import android.support.v7.app.AppCompatDelegate
 import com.epishie.news.di.AppComponent
 import com.epishie.news.di.DaggerAppComponent
 import com.epishie.news.model.db.NewsDb
@@ -21,6 +22,7 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         Debuggers.setup(this)
 
         component = DaggerAppComponent.builder()

@@ -1,6 +1,7 @@
 package com.epishie.news.features.stories
 
 import android.arch.lifecycle.ViewModelProviders
+import android.graphics.drawable.Animatable
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
@@ -17,7 +18,6 @@ import com.jakewharton.rxbinding2.support.v4.widget.refreshing
 import com.jakewharton.rxbinding2.view.clicks
 import com.jakewharton.rxbinding2.view.visibility
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Observable
 import io.reactivex.Scheduler
 import io.reactivex.functions.Consumer
 import kotlinx.android.synthetic.main.stories_activity.*
@@ -54,6 +54,10 @@ class StoriesActivity : BaseActivity() {
         val divider = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
         divider.setDrawable(ContextCompat.getDrawable(this, R.drawable.story_space))
         storyList.addItemDecoration(divider)
+        val drawable = emptyIcon.drawable
+        if (drawable is Animatable) {
+            drawable.start()
+        }
 
         filterButton.clicks()
                 .subscribeOn(ui)
