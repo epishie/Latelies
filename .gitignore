@@ -6,4 +6,8 @@
 /build
 /captures
 .externalNativeBuild
-/keystore.properties
+*.jks
+keystore.properties
+fabric.properties
+beta_notes.txt
+beta_users.txt

@@ -20,5 +20,15 @@
             android:screenOrientation="portrait" />
         <activity android:name=".features.story.StoryActivity"
             android:screenOrientation="portrait" />
+
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="${api_key_fabric}" />
+        <!--
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="c0423956be2a1d9ef67473bc0f983f96ca2789c8"
+            />
+            -->
     </application>
 </manifest>
