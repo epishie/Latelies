@@ -14,6 +14,10 @@ class StoryViewModel
 @Inject constructor(private val storyModel: StoryModel) : ViewModel() {
     private var lastState = State()
 
+    private companion object CONSTANTS {
+        const val WORDS_PER_MIN = 200
+    }
+
     fun update(url: String, events: Flowable<Event>): Flowable<State> {
         val actions = events.map { event ->
             when (event) {
@@ -46,7 +50,8 @@ class StoryViewModel
                 val story = result.story
                 lastState.copy(story = Story(story.url, story.title, story.source.name,
                         story.source.url.toLogoUrl(), story.author,
-                        story.date, story.thumbnail, story.content, story.wordCount?.div(200))
+                        story.date, story.thumbnail, story.content,
+                        story.wordCount?.div(WORDS_PER_MIN))
                 )
             }
             is Result.Status -> when (result.actual) {

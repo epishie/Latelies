@@ -24,10 +24,11 @@ import com.squareup.picasso.Picasso
 import io.reactivex.Flowable
 import io.reactivex.Scheduler
 import kotlinx.android.synthetic.main.story_activity.*
+import org.chromium.customtabsclient.shared.CustomTabActivityHelper
 import javax.inject.Inject
 import javax.inject.Named
 
-class StoryActivity : BaseActivity() {
+class StoryActivity : BaseActivity(), CustomTabActivityHelper.ConnectionCallback {
     companion object {
         fun storyIntent(context: Context, url: String): Intent {
             return Intent(context, StoryActivity::class.java)
@@ -40,14 +41,16 @@ class StoryActivity : BaseActivity() {
     private lateinit var vm: StoryViewModel
     private lateinit var url: Uri
     private var defaultImage: Int = 0
+    private lateinit var customTabHelper: CustomTabActivityHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         url = intent.data ?: throw IllegalStateException("Missing data in the intent")
 
         component.inject(this)
         vm = ViewModelProviders.of(this, component.vmFactory())[StoryViewModel::class.java]
+
+        customTabHelper = CustomTabActivityHelper()
 
         setContentView(R.layout.story_activity)
         setupView()
@@ -56,6 +59,16 @@ class StoryActivity : BaseActivity() {
         val index = Math.abs(intent.data.toString().hashCode()).rem(array.length())
         defaultImage = array.getResourceId(index, 0)
         array.recycle()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        customTabHelper.bindCustomTabsService(this)
+    }
+
+    override fun onStop() {
+        customTabHelper.unbindCustomTabsService(this)
+        super.onStop()
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -76,6 +89,14 @@ class StoryActivity : BaseActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun onCustomTabsConnected() {
+        customTabHelper.mayLaunchUrl(url, null, null)
+    }
+
+    override fun onCustomTabsDisconnected() {
+        // no-op
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -111,9 +132,9 @@ class StoryActivity : BaseActivity() {
                 }
         stories.filter { story -> story.date != null }
                 .map { story ->
-                    val flags = DateUtils.FORMAT_SHOW_DATE
+                    val flags = DateUtils.FORMAT_SHOW_DATE.or(DateUtils.FORMAT_SHOW_YEAR)
                     val date = DateUtils.formatDateTime(this, story.date!!, flags)
-                    val readTime = if (story.timeToRead != null) {
+                    val readTime = if (story.timeToRead != null && story.timeToRead > 0 ) {
                         getString(R.string.lbl_time_to_read,
                                 Math.ceil(story.timeToRead.toDouble()).toInt())
                     } else {
@@ -133,6 +154,7 @@ class StoryActivity : BaseActivity() {
         disposables.add(stories.connect())
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
         val settings = webView.settings
         settings.javaScriptEnabled = true
@@ -170,6 +192,6 @@ class StoryActivity : BaseActivity() {
                 .setStartAnimations(this, R.anim.slide_in_right,
                         android.R.anim.slide_out_right)
                 .build()
-        intent.launchUrl(this, url)
+        CustomTabActivityHelper.openCustomTab(this, intent, url, null)
     }
 }

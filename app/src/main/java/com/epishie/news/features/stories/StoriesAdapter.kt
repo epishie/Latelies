@@ -2,6 +2,7 @@ package com.epishie.news.features.stories
 
 import android.content.Context
 import android.support.v4.content.ContextCompat
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
@@ -16,8 +17,21 @@ import kotlinx.android.synthetic.main.story_item.view.*
 class StoriesAdapter(context: Context, private val storyClicks: Consumer<StoriesViewModel.Story>)
     : RecyclerView.Adapter<StoriesAdapter.ViewHolder>() {
     val stories = Consumer<List<StoriesViewModel.Story>> { stories ->
+        val callback = object : DiffUtil.Callback() {
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return list[oldItemPosition].url == stories[newItemPosition].url
+            }
+
+            override fun getOldListSize(): Int = list.size
+
+            override fun getNewListSize(): Int = stories.size
+
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return list[oldItemPosition] == stories[newItemPosition]
+            }
+        }
+        DiffUtil.calculateDiff(callback, true).dispatchUpdatesTo(this)
         list = stories
-        notifyDataSetChanged()
     }
     private var list: List<StoriesViewModel.Story> = emptyList()
     private val defaultImages: List<Int>
